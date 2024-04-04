@@ -50,6 +50,7 @@ function glpi_fix_perms(){
 	chown www-data:www-data ${FOLDER_WEB}${FOLDER_GLPI}marketplace -Rf
 	find ${FOLDER_WEB}${FOLDER_GLPI} -type f -exec chmod 0644 {} \;
 	find ${FOLDER_WEB}${FOLDER_GLPI} -type d -exec chmod 0755 {} \;
+	chmod +x ${FOLDER_WEB}${FOLDER_GLPI}front/cron.php
 }
 
 # Realiza o download e extração do source do glpi para a devida pasta
