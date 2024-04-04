@@ -1,0 +1,55 @@
+FROM debian:11.9
+
+# Não faça perguntas na instalação
+ENV DEBIAN_FRONTEND noninteractive
+
+#Instalação dos pré-requisitos
+RUN apt update && \
+	apt install --yes --no-install-recommends \
+	git \
+	curl \
+	unzip \
+	cron \
+	wget \
+	ca-certificates \
+	jq \
+	apache2 \
+	php7.4 \
+	php7.4-mysql \
+	php7.4-ldap \
+	php7.4-xmlrpc \
+	php7.4-imap \
+	php7.4-curl \
+	php7.4-gd \
+	php7.4-mbstring \
+	php7.4-xml \
+	php7.4-apcu-bc \
+	php-cas \
+	php7.4-intl \
+	php7.4-zip \
+	php7.4-bz2 \
+	libapache2-mod-php7.4 \
+	libldap-2.4-2 \
+	libldap-common \
+	libsasl2-2 \
+	libsasl2-modules \
+	libsasl2-modules-db \
+	&& rm -rf /var/lib/apt/lists/*
+
+
+# Instala o composer necessário para alguns plugins
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copia o entrypoint do projeto para o container
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Sanitiza o entrypoint removendo carrige return (CR)
+RUN sed -i -e 's/\r$//' /entrypoint.sh
+
+# Declara o entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Expoe a porta do apache
+EXPOSE 80
+

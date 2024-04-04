@@ -1,0 +1,53 @@
+version: "3.2"
+
+services:
+#MariaDB Container
+  mariadb:
+    image: mariadb:10
+    container_name: mariadb
+    hostname: mariadb
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=123456
+    restart: always
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 100
+
+#GLPI Container
+  glpi:
+    build:
+      context: .
+      #dockerfile: ./Dockerfile
+      # para glpi < 10.0.7 usar php7
+      dockerfile: ./Dockerfile-php7
+    container_name : glpi
+    hostname: glpi
+    ports:
+      - "80:80"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - glpi_www:/var/www/html/glpi
+    environment:
+      - TIMEZONE=America/sao_paulo
+      - VERSION_GLPI=10.0.5
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=glpi_dev
+      - DB_USER=root
+      - DB_PASSWORD=123456
+    restart: always
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    links:
+      - mariadb
+
+volumes:
+  glpi_www:
+
