@@ -1,7 +1,6 @@
 version: "3.2"
 
 services:
-#MariaDB Container
   mariadb:
     image: mariadb:10
     container_name: mariadb
@@ -18,24 +17,43 @@ services:
       timeout: 5s
       retries: 100
 
-#GLPI Container
-  glpi:
-    build:
-      context: .
-      #dockerfile: ./Dockerfile
-      # para glpi < 10.0.7 usar php7
-      dockerfile: ./Dockerfile-php7
-    container_name : glpi
-    hostname: glpi
+
+  reverse-proxy:
+    image: traefik:v2.11
+    command: 
+      - --log.level=DEBUG
+      - --api.insecure=true
+      - --providers.docker
+      - --certificatesresolvers.lets-encrypt.acme.email=it@business.com.br
+      - --certificatesresolvers.lets-encrypt.acme.storage=/etc/letsencrypt/acme.json
+      - --certificatesresolvers.lets-encrypt.acme.httpchallenge=true
+      - --certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./acme.json:/acme.json
+      - letsencrypt:/etc/letsencrypt/
+
+
+  glpi:
+    build:
+      context: ./glpi
+      dockerfile: Dockerfile
+      # for glpi < 10.0.7 use the dockerfile bellow
+      #dockerfile: glpi/Dockerfile-php7
+    container_name : glpi
+    hostname: glpi
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - glpi_www:/var/www/html/glpi
     environment:
       - TIMEZONE=America/sao_paulo
-      - VERSION_GLPI=10.0.5
+      - VERSION_GLPI=10.0.14
       - DB_HOST=mariadb
       - DB_PORT=3306
       - DB_DATABASE=glpi_dev
@@ -47,7 +65,78 @@ services:
         condition: service_healthy
     links:
       - mariadb
+    labels: 
+      - traefik.http.routers.glpi.rule=Host(`glpi.contoso.com`)
+      - traefik.http.routers.glpi.tls=true
+      - traefik.http.routers.glpi.tls.certresolver=lets-encrypt
+      - traefik.http.routers.glpi.tls.domains[0].main=glpi.contoso.com
+
+
+  evolution_api:
+    image: atendai/evolution-api
+    container_name: evolution
+    hostname: evolution
+    restart: always
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    env_file:
+      - evolution_api/.env
+    command: ['node', './dist/src/main.js']
+    expose: 
+      - "8080"
+    labels: 
+      - traefik.http.routers.evolution.rule=Host(`whatsapp.contoso.com`)
+      - traefik.http.routers.evolution.tls=true
+      - traefik.http.routers.evolution.tls.certresolver=lets-encrypt
+      - traefik.http.routers.evolution.tls.domains[0].main=whatsapp.contoso.com
+
+
+  typebot-db:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=typebot
+      - POSTGRES_PASSWORD=typebot
+
+
+  typebot-builder:
+    image: baptistearno/typebot-builder:latest
+    container_name: typebot
+    hostname: typebot
+    restart: always
+    depends_on:
+      - typebot-db
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    env_file: typebot/.env
+    labels: 
+      - traefik.http.routers.typebot-builder.rule=Host(`typebot.contoso.com`)
+      - traefik.http.routers.typebot-builder.tls=true
+      - traefik.http.routers.typebot-builder.tls.certresolver=lets-encrypt
+      - traefik.http.routers.typebot-builder.tls.domains[0].main=typebot.contoso.com
+
+  typebot-viewer:
+    image: baptistearno/typebot-viewer:latest
+    container_name: bot
+    hostname: bot
+    restart: always
+      #ports:
+      #  - '8082:3000'
+    env_file: typebot/.env
+    labels: 
+      - traefik.http.routers.bot.rule=Host(`bot.contoso.com`)
+      - traefik.http.routers.bot.tls=true
+      - traefik.http.routers.bot.tls.certresolver=lets-encrypt
+      - traefik.http.routers.bot.tls.domains[0].main=bot.contoso.com
+
+
 
 volumes:
   glpi_www:
-
+  evolution_instances:
+  evolution_store:
+  db-data:
+  letsencrypt:
