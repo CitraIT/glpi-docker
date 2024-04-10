@@ -24,7 +24,7 @@ services:
       - --log.level=DEBUG
       - --api.insecure=true
       - --providers.docker
-      - --certificatesresolvers.lets-encrypt.acme.email=it@business.com.br
+      - --certificatesresolvers.lets-encrypt.acme.email=it@contoso.com
       - --certificatesresolvers.lets-encrypt.acme.storage=/etc/letsencrypt/acme.json
       - --certificatesresolvers.lets-encrypt.acme.httpchallenge=true
       - --certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web
@@ -123,8 +123,6 @@ services:
     container_name: bot
     hostname: bot
     restart: always
-      #ports:
-      #  - '8082:3000'
     env_file: typebot/.env
     labels: 
       - traefik.http.routers.bot.rule=Host(`bot.contoso.com`)
