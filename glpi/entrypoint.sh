@@ -346,6 +346,13 @@ then
         rm -Rf ${FOLDER_WEB}${FOLDER_GLPI}plugins/${PLUGIN_DOWNLOADED_FILENAME}
 fi
 
+# FIX: plugin trademark - translate french login buttons (please complain with the developer of this plugin, not me)
+# login local and login email
+sed -i 's/Connexion clients/Conta tradicional/' /var/www/html/glpi/marketplace/singlesignon/hook.php
+sed -i 's/Connexion collaborateurs Isia/Login com E-mail/' /var/www/html/glpi/marketplace/singlesignon/inc/toolbox.class.php
+
+
+
 # PLUGIN: escalade
 glpi_install_supported_plugin escalade ${PLUGIN_ESCALADE_SRC}
 
