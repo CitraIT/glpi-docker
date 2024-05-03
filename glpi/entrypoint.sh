@@ -332,6 +332,12 @@ then
         sed -i 's/\/plugins\//\/marketplace\//' ${FOLDER_WEB}${FOLDER_GLPI}marketplace/singlesignon/inc/toolbox.class.php
 fi
 
+# FIX: plugin singlesignon - translate french login buttons (please complain with the developer of this plugin, not me)
+# login local and login email
+sed -i 's/Connexion clients/Conta tradicional/' ${FOLDER_WEB}${FOLDER_GLPI}marketplace/singlesignon/hook.php
+sed -i 's/Connexion collaborateurs Isia/Login com E-mail/' ${FOLDER_WEB}${FOLDER_GLPI}marketplace/singlesignon/inc/toolbox.class.php
+
+
 # PLUGIN: trademark - não é oficialmente suportado e precisa de instlação manual...
 PLUGIN_NAME=trademark
 PLUGIN_VERSION=1.4.1
@@ -345,11 +351,6 @@ then
         mv ${FOLDER_WEB}${FOLDER_GLPI}plugins/${PLUGIN_NAME}-${PLUGIN_VERSION} ${FOLDER_WEB}${FOLDER_GLPI}plugins/${PLUGIN_NAME}
         rm -Rf ${FOLDER_WEB}${FOLDER_GLPI}plugins/${PLUGIN_DOWNLOADED_FILENAME}
 fi
-
-# FIX: plugin trademark - translate french login buttons (please complain with the developer of this plugin, not me)
-# login local and login email
-sed -i 's/Connexion clients/Conta tradicional/' /var/www/html/glpi/marketplace/singlesignon/hook.php
-sed -i 's/Connexion collaborateurs Isia/Login com E-mail/' /var/www/html/glpi/marketplace/singlesignon/inc/toolbox.class.php
 
 
 
