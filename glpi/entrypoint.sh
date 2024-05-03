@@ -343,7 +343,7 @@ PLUGIN_NAME=trademark
 PLUGIN_VERSION=1.4.1
 PLUGIN_SRC=https://github.com/LibreCodeCoop/trademark/archive/refs/tags/v${PLUGIN_VERSION}.tar.gz
 PLUGIN_DOWNLOADED_FILENAME=v${PLUGIN_VERSION}.tar.gz
-if [ ! -d ${FOLDER_WEB}${FOLDER_GLPI}plugin/${PLUGIN_NAME} ];
+if [ ! -d ${FOLDER_WEB}${FOLDER_GLPI}plugins/${PLUGIN_NAME} ];
 then
         log "installing plugin ${PLUGIN_NAME}..."
         wget -q -P ${FOLDER_WEB}${FOLDER_GLPI}plugins/ ${PLUGIN_SRC}
