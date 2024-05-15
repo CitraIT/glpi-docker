@@ -20,11 +20,11 @@ services:
 
   reverse-proxy:
     image: traefik:v2.11
-    command: 
+    command:
       - --log.level=DEBUG
       - --api.insecure=true
       - --providers.docker
-      - --certificatesresolvers.lets-encrypt.acme.email=it@contoso.com
+      - --certificatesresolvers.lets-encrypt.acme.email=suporte@citrait.com.br
       - --certificatesresolvers.lets-encrypt.acme.storage=/etc/letsencrypt/acme.json
       - --certificatesresolvers.lets-encrypt.acme.httpchallenge=true
       - --certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web
@@ -65,11 +65,11 @@ services:
         condition: service_healthy
     links:
       - mariadb
-    labels: 
-      - traefik.http.routers.glpi.rule=Host(`glpi.contoso.com`)
+    labels:
+      - traefik.http.routers.glpi.rule=Host(`glpi.empresa.com.br`)
       - traefik.http.routers.glpi.tls=true
       - traefik.http.routers.glpi.tls.certresolver=lets-encrypt
-      - traefik.http.routers.glpi.tls.domains[0].main=glpi.contoso.com
+      - traefik.http.routers.glpi.tls.domains[0].main=glpi.empresa.com.br
 
 
   evolution_api:
@@ -83,13 +83,38 @@ services:
     env_file:
       - evolution_api/.env
     command: ['node', './dist/src/main.js']
-    expose: 
+    expose:
       - "8080"
-    labels: 
-      - traefik.http.routers.evolution.rule=Host(`whatsapp.contoso.com`)
+    labels:
+      - traefik.http.routers.evolution.rule=Host(`whats.empresa.com.br`)
       - traefik.http.routers.evolution.tls=true
       - traefik.http.routers.evolution.tls.certresolver=lets-encrypt
-      - traefik.http.routers.evolution.tls.domains[0].main=whatsapp.contoso.com
+      - traefik.http.routers.evolution.tls.domains[0].main=whats.empresa.com.br
+
+
+
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    hostname: n8n
+    restart: always
+    volumes:
+      - n8n_data:/home/node/.n8n
+    labels:
+      - traefik.http.routers.n8n.rule=Host(`n8n.empresa.com.br`)
+      - traefik.http.routers.n8n.tls=true
+      - traefik.http.routers.n8n.tls.certresolver=lets-encrypt
+      - traefik.http.routers.n8n.tls.domains[0].main=n8n.empresa.com.br
+      - traefik.http.services.n8n.loadbalancer.server.port=5678
+    expose:
+      - "5678:5678"
+    ports:
+      - "5678:5678"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      - N8N_SECURE_COOKIE=false
 
 
   typebot-db:
@@ -112,11 +137,11 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     env_file: typebot/.env
-    labels: 
-      - traefik.http.routers.typebot-builder.rule=Host(`typebot.contoso.com`)
+    labels:
+      - traefik.http.routers.typebot-builder.rule=Host(`typebot.empresa.com.br`)
       - traefik.http.routers.typebot-builder.tls=true
       - traefik.http.routers.typebot-builder.tls.certresolver=lets-encrypt
-      - traefik.http.routers.typebot-builder.tls.domains[0].main=typebot.contoso.com
+      - traefik.http.routers.typebot-builder.tls.domains[0].main=typebot.empresa.com.br
 
   typebot-viewer:
     image: baptistearno/typebot-viewer:latest
@@ -124,11 +149,11 @@ services:
     hostname: bot
     restart: always
     env_file: typebot/.env
-    labels: 
-      - traefik.http.routers.bot.rule=Host(`bot.contoso.com`)
+    labels:
+      - traefik.http.routers.bot.rule=Host(`bot.empresa.com.br`)
       - traefik.http.routers.bot.tls=true
       - traefik.http.routers.bot.tls.certresolver=lets-encrypt
-      - traefik.http.routers.bot.tls.domains[0].main=bot.contoso.com
+      - traefik.http.routers.bot.tls.domains[0].main=bot.empresa.com.br
 
 
 
@@ -138,3 +163,4 @@ volumes:
   evolution_store:
   db-data:
   letsencrypt:
+  n8n_data:
